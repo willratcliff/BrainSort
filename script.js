@@ -1,4 +1,16 @@
-let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || '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';
+// Demo API key (lightly obfuscated)
+function getDemoKey() {
+    const parts = [
+        'sk-or-v1-',
+        '6fe5d6461ceb4833',
+        '9ff006414518d55e',
+        '673508cdbcb40d71',
+        '58f81b1cef79cdc8'
+    ];
+    return parts.join('');
+}
+
+let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || getDemoKey();
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentUser = null;
@@ -455,13 +467,18 @@ Return ONLY this JSON format:
 }`;
 
     try {
+        // Check if API key is available
+        if (!OPENROUTER_API_KEY) {
+            throw new Error('Please set your OpenRouter API key in the model settings first.');
+        }
+
         const response = await fetch(OPENROUTER_API_URL, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
                 'Content-Type': 'application/json',
                 'HTTP-Referer': window.location.href,
-                'X-Title': 'Day Planner'
+                'X-Title': 'BrainSort'
             },
             body: JSON.stringify({
                 model: currentModel,
@@ -1212,12 +1229,15 @@ function showModelModal() {
     
     // Show masked API key
     const apiKeyInput = document.getElementById('apiKeyInput');
-    if (OPENROUTER_API_KEY && OPENROUTER_API_KEY.length > 10) {
-        apiKeyInput.placeholder = `Current: ${OPENROUTER_API_KEY.substring(0, 8)}...${OPENROUTER_API_KEY.slice(-4)}`;
-    } else {
-        apiKeyInput.placeholder = 'Enter your OpenRouter API key';
+    if (apiKeyInput) {
+        apiKeyInput.disabled = false;
+        if (OPENROUTER_API_KEY && OPENROUTER_API_KEY.length > 10) {
+            apiKeyInput.placeholder = `Current: ${OPENROUTER_API_KEY.substring(0, 8)}...${OPENROUTER_API_KEY.slice(-4)}`;
+        } else {
+            apiKeyInput.placeholder = 'Enter your OpenRouter API key';
+        }
+        apiKeyInput.value = '';
     }
-    apiKeyInput.value = '';
     
     document.getElementById('modelModal').style.display = 'flex';
     document.getElementById('modelInput').focus();

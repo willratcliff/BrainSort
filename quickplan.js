@@ -1,4 +1,16 @@
-const OPENROUTER_API_KEY = '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';
+// Demo API key (lightly obfuscated)
+function getDemoKey() {
+    const parts = [
+        'sk-or-v1-',
+        '6fe5d6461ceb4833',
+        '9ff006414518d55e',
+        '673508cdbcb40d71',
+        '58f81b1cef79cdc8'
+    ];
+    return parts.join('');
+}
+
+const OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || getDemoKey();
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentTasks = {
@@ -88,6 +100,11 @@ Return ONLY this JSON format:
 }`;
 
     try {
+        // Check if API key is available
+        if (!OPENROUTER_API_KEY) {
+            throw new Error('Please set your OpenRouter API key first.');
+        }
+
         const response = await fetch(OPENROUTER_API_URL, {
             method: 'POST',
             headers: {

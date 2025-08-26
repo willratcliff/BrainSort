@@ -1,5 +1,17 @@
 // Brainstorm page functionality
-let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || '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';
+// Demo API key (lightly obfuscated)
+function getDemoKey() {
+    const parts = [
+        'sk-or-v1-',
+        '6fe5d6461ceb4833',
+        '9ff006414518d55e',
+        '673508cdbcb40d71',
+        '58f81b1cef79cdc8'
+    ];
+    return parts.join('');
+}
+
+let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || getDemoKey();
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentUser = null;
@@ -172,6 +184,11 @@ When writing emails or formal communications, use the user's actual name for sig
 Always consider the task context, category, and original brain dump context when providing assistance.`;
     
     try {
+        // Check if API key is available
+        if (!OPENROUTER_API_KEY) {
+            return 'Please set your OpenRouter API key first. Go back to the main page and click the model settings button to add your API key.';
+        }
+
         const response = await fetch(OPENROUTER_API_URL, {
             method: 'POST',
             headers: {

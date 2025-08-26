@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainSort - Dump the chaos, let it fall into place</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="landingPage" class="landing-container">
+        <div class="landing-content">
+            <div class="brainsort-header">
+                <h1 class="brainsort-title">BrainSort</h1>
+                <p class="brainsort-tagline">Dump the chaos, let it fall into place.</p>
+                <div class="brainsort-description">
+                    <p>When your head feels packed with tasks and ideas, it's hard to know where to start. BrainSort takes your brain dump and organizes it into four simple categories: the quick triggers that unblock progress, the ideas that can marinate, the deep work that deserves focus, and the quick wins that give you momentum.</p>
+                    <p>Instead of staring at a wall of "everything," you'll see what really matters — sorted, clear, and ready for action.</p>
+                </div>
+            </div>
+            
+            <div class="security-warnings">
+                <div class="beta-warning">
+                    <h2>🚧 PRIVATE BETA 🚧</h2>
+                    <p class="warning-text">DO NOT SHARE PUBLICLY</p>
+                </div>
+                
+                <div class="security-notice">
+                    <h2>⚠️ Security & Privacy Notice</h2>
+                    <ul class="warning-list">
+                        <li><strong>Data Logging:</strong> Information entered may be logged by the LLM host and locally</li>
+                        <li><strong>Sensitive Information:</strong> DO NOT enter sensitive, confidential, or personal data</li>
+                        <li><strong>Beta Software:</strong> This is a vibe-coded beta app with expected security risks</li>
+                        <li><strong>Use Responsibly:</strong> Treat this application with appropriate caution</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="user-setup">
+                <h2>Enter Your Name</h2>
+                <p>Each user gets their own separate workspace</p>
+                <input type="text" id="userNameInput" placeholder="Your name" maxlength="50">
+                <button id="enterAppBtn" disabled>Enter BrainSort</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display: none;">
+        <header>
+            <div class="header-left">
+                <h1>BrainSort</h1>
+                <div class="current-user">
+                    <span id="currentUserDisplay"></span>
+                    <button id="switchUserBtn" class="switch-user-btn" title="Switch User">👤</button>
+                </div>
+            </div>
+            <nav>
+                <button id="brainDumpBtn" class="nav-btn active">Brain Dump</button>
+                <button id="quadrantsBtn" class="nav-btn">Current Tasks</button>
+                <button id="historyBtn" class="nav-btn">Completed Tasks</button>
+                <button id="brainDumpHistoryBtn" class="nav-btn">Brain Dump History</button>
+                <button id="templatesBtn" class="nav-btn">Templates</button>
+                <button id="modelBtn" class="nav-btn settings-btn" title="Change AI Model">⚙️</button>
+            </nav>
+        </header>
+
+        <main id="plannerView">
+            <div class="brain-dump-section">
+                <h2>Brain Dump</h2>
+                <p class="instructions">Write down everything that's on your mind - tasks, ideas, projects, reminders. Don't worry about organizing, just get it all out!</p>
+                <textarea id="brainDumpInput" placeholder="Example:
+- Finish presentation for Friday's meeting
+- Call dentist to schedule appointment
+- Review team's pull requests
+- Buy groceries
+- Think about new marketing strategy
+- Fix bug in login system
+- Send invoice to client
+- Plan vacation dates"></textarea>
+                <button id="organizeBtn" class="organize-btn">Organize My Thoughts</button>
+            </div>
+
+            <div class="quadrants-section" style="display: none;">
+                <h2>Your Day Organized</h2>
+                <div class="action-buttons">
+                    <button id="newDumpBtn" class="action-btn">📝 Add Tasks Brain Dump</button>
+                    <button id="manualAddBtn" class="action-btn">➕ Add Task Manually</button>
+                    <button id="printBtn" class="action-btn">🖨️ Print Tasks</button>
+                    <button id="cleanSlateBtn" class="action-btn">🗑️ Clean Slate</button>
+                </div>
+                <div class="quadrants-grid">
+                    <div class="quadrant" id="quadrant1">
+                        <div class="quadrant-header">
+                            <h3>🚀 Set in Motion</h3>
+                            <button class="add-task-btn" data-quadrant="triggers">+</button>
+                        </div>
+                        <p class="quadrant-desc">2-5 minute tasks that unblock next steps</p>
+                        <ul class="task-list" id="triggers-list"></ul>
+                    </div>
+                    <div class="quadrant" id="quadrant2">
+                        <div class="quadrant-header">
+                            <h3>🧠 Marinate</h3>
+                            <button class="add-task-btn" data-quadrant="marinate">+</button>
+                        </div>
+                        <p class="quadrant-desc">Ideas to jot down and let simmer</p>
+                        <ul class="task-list" id="marinate-list"></ul>
+                    </div>
+                    <div class="quadrant" id="quadrant3">
+                        <div class="quadrant-header">
+                            <h3>🎯 Deep Work</h3>
+                            <button class="add-task-btn" data-quadrant="deepwork">+</button>
+                        </div>
+                        <p class="quadrant-desc">Tasks requiring extended focus</p>
+                        <ul class="task-list" id="deepwork-list"></ul>
+                    </div>
+                    <div class="quadrant" id="quadrant4">
+                        <div class="quadrant-header">
+                            <h3>✅ Quick Wins</h3>
+                            <button class="add-task-btn" data-quadrant="quickwins">+</button>
+                        </div>
+                        <p class="quadrant-desc">Short tasks for momentum</p>
+                        <ul class="task-list" id="quickwins-list"></ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="manualAddModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Add New Task</h3>
+                    <input type="text" id="newTaskInput" placeholder="Enter task description...">
+                    <label>Select Quadrant:</label>
+                    <select id="quadrantSelect">
+                        <option value="triggers">Set in Motion (2-5 min)</option>
+                        <option value="marinate">Marinate (Ideas to capture)</option>
+                        <option value="deepwork">Deep Work (1+ hours)</option>
+                        <option value="quickwins">Quick Wins (10-30 min)</option>
+                    </select>
+                    <div class="modal-buttons">
+                        <button id="confirmAddBtn">Add Task</button>
+                        <button id="cancelAddBtn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <main id="historyView" style="display: none;">
+            <div class="history-container">
+                <h2>Completed Tasks</h2>
+                <div id="completedTasksList" class="completed-tasks-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <div class="attribution">
+            © 2025 Will Ratcliff & Han Pham | BrainSort
+        </div>
+    </footer>
+
+    <div id="modelModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>AI Model Settings</h3>
+            <label>Current Model:</label>
+            <div id="currentModel" class="current-model">google/gemini-2.5-flash</div>
+            <label>Change Model:</label>
+            <input type="text" id="modelInput" placeholder="e.g., openai/gpt-4o, anthropic/claude-3.5-sonnet, etc.">
+            <div class="model-examples">
+                <p>Popular models:</p>
+                <button class="model-preset" data-model="google/gemini-2.5-flash">Gemini 2.5 Flash (Default)</button>
+                <button class="model-preset" data-model="openai/gpt-oss-120b">GPT OSS 120B</button>
+                <button class="model-preset" data-model="deepseek/deepseek-chat-v3.1">DeepSeek Chat v3.1</button>
+                <button class="model-preset" data-model="anthropic/claude-sonnet-4">Claude Sonnet 4</button>
+            </div>
+            <div class="developer-section">
+                <h4>Developer Options</h4>
+                
+                <div class="api-key-section">
+                    <label for="apiKeyInput">OpenRouter API Key:</label>
+                    <input type="password" id="apiKeyInput" placeholder="Enter your OpenRouter API key" class="api-key-input">
+                    <button id="updateApiKeyBtn" class="api-key-btn">Update Key</button>
+                    <p class="api-key-description">Your API key is stored locally and never shared</p>
+                </div>
+                
+                <div class="export-section">
+                    <button id="exportLogBtn" class="export-log-btn">📊 Export Brain Dump Logs</button>
+                    <p class="export-description">Download all brain dump sessions as JSON for analysis</p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirmModelBtn">Save Model</button>
+                <button id="cancelModelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <main id="historyView" class="history-page" style="display: none;">
+        <div class="container">
+            <header class="history-page-header">
+                <div class="header-left">
+                    <h1>📋 Brain Dump History</h1>
+                    <div class="current-user">
+                        <span id="currentUserDisplayHistory"></span>
+                        <button id="switchUserBtnHistory" class="switch-user-btn" title="Switch User">👤</button>
+                    </div>
+                </div>
+                <nav class="history-nav">
+                    <button id="backToBrainDumpBtn" class="nav-btn">← Back to BrainSort</button>
+                </nav>
+            </header>
+            
+            <div class="history-main">
+                <div class="history-intro">
+                    <p class="history-subtitle">Review your past brain dumps and how they were organized into actionable categories</p>
+                </div>
+                
+                <div class="history-controls">
+                    <input type="text" id="historySearch" placeholder="Search your brain dumps..." class="history-search">
+                    <div class="history-stats">
+                        <span id="historyCount">0 brain dumps</span>
+                    </div>
+                </div>
+                
+                <div id="historyContent" class="history-content">
+                    <div class="history-empty">
+                        <p>No brain dumps yet! Start by creating your first brain dump.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="templatesView" class="templates-page" style="display: none;">
+        <div class="container">
+            <header class="templates-page-header">
+                <div class="header-left">
+                    <h1>🧠 Brainstorm Templates</h1>
+                    <div class="current-user">
+                        <span id="currentUserDisplayTemplates"></span>
+                        <button id="switchUserBtnTemplates" class="switch-user-btn" title="Switch User">👤</button>
+                    </div>
+                </div>
+                <nav class="templates-nav">
+                    <button id="backFromTemplatesBtn" class="nav-btn">← Back to BrainSort</button>
+                    <button id="importTemplatesBtn" class="nav-btn">📥 Import</button>
+                    <button id="exportTemplatesBtn" class="nav-btn">📤 Export</button>
+                    <button id="createTemplateBtn" class="nav-btn primary">+ Create Template</button>
+                </nav>
+            </header>
+            
+            <div class="templates-main">
+                <div class="templates-intro">
+                    <p class="templates-subtitle">Create and manage custom prompt templates for AI brainstorming sessions</p>
+                </div>
+                
+                <div class="templates-controls">
+                    <input type="text" id="templatesSearch" placeholder="Search templates..." class="templates-search">
+                    <div class="templates-stats">
+                        <span id="templatesCount">0 templates</span>
+                    </div>
+                </div>
+                
+                <div id="templatesContent" class="templates-content">
+                    <div class="templates-empty">
+                        <p>No templates yet! Create your first custom template to streamline your brainstorming.</p>
+                        <button class="create-template-cta">Create Your First Template</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Template Creation/Edit Modal -->
+    <div id="templateModal" class="modal" style="display: none;">
+        <div class="modal-content template-modal-content">
+            <h3 id="templateModalTitle">Create New Template</h3>
+            
+            <div class="template-form">
+                <label for="templateName">Template Name</label>
+                <input type="text" id="templateName" placeholder="e.g., Email Draft, Meeting Prep, Research Outline">
+                
+                <label for="templateDescription">Description</label>
+                <input type="text" id="templateDescription" placeholder="Brief description of what this template does">
+                
+                <label for="templateTags">Tags (optional)</label>
+                <input type="text" id="templateTags" placeholder="e.g., email, work, personal (comma-separated)">
+                
+                <label for="templatePrompt">Template Prompt</label>
+                <div class="template-prompt-help">
+                    <p>Available variables: {task}, {quadrant}, {user}, {date}, {time}</p>
+                </div>
+                <textarea id="templatePrompt" placeholder="Example: Help me draft a professional email about {task}. The email should be concise and action-oriented." rows="6"></textarea>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="saveTemplateBtn" class="primary">Save Template</button>
+                <button id="cancelTemplateBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for template import -->
+    <input type="file" id="templateImportInput" accept=".json" style="display: none;">
+
+
+    <!-- Hidden print-only content -->
+    <div id="printContent" class="print-only">
+        <div class="print-header">
+            <h1>BrainSort - My Tasks</h1>
+            <div class="print-date"></div>
+            <div class="print-user"></div>
+        </div>
+        
+        <div class="print-quadrants">
+            <div class="print-quadrant">
+                <h2>🚀 Set in Motion</h2>
+                <p class="print-desc">2-5 minute tasks that unblock next steps</p>
+                <ul id="print-triggers"></ul>
+            </div>
+            
+            <div class="print-quadrant">
+                <h2>🧠 Marinate</h2>
+                <p class="print-desc">Ideas to jot down and let simmer</p>
+                <ul id="print-marinate"></ul>
+            </div>
+            
+            <div class="print-quadrant">
+                <h2>🎯 Deep Work</h2>
+                <p class="print-desc">Tasks requiring extended focus</p>
+                <ul id="print-deepwork"></ul>
+            </div>
+            
+            <div class="print-quadrant">
+                <h2>✅ Quick Wins</h2>
+                <p class="print-desc">Short tasks for momentum</p>
+                <ul id="print-quickwins"></ul>
+            </div>
+        </div>
+        
+        <div class="print-footer">
+            <p>Generated by BrainSort - Dump the chaos, let it fall into place.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Brainstorm Session - BrainSort</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--background-color);
+            font-family: var(--font-primary);
+        }
+        
+        .brainstorm-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .brainstorm-page-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .brainstorm-page-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .task-context {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .task-context .task-quadrant {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-right: 8px;
+        }
+        
+        .brainstorm-main {
+            padding: 30px;
+        }
+        
+        .template-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .template-selector-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        #brainstormTemplateSelect {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .template-context-display {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px 20px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .template-context-display h4 {
+            margin: 0 0 8px 0;
+            color: var(--primary-color);
+        }
+        
+        .input-section {
+            margin-bottom: 25px;
+        }
+        
+        .input-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        #brainstormPrompt {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+        
+        #sendBrainstormBtn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        #sendBrainstormBtn:hover {
+            background: #5b56f0;
+        }
+        
+        #sendBrainstormBtn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        
+        .conversation-section {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 25px;
+        }
+        
+        .brainstorm-messages {
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        
+        .message {
+            margin: 15px 0;
+            padding: 15px 20px;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+        
+        .message.user {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .message.ai {
+            background: #f1f8e9;
+            border-left: 4px solid #4caf50;
+            position: relative;
+        }
+        
+        .message.ai .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .message.ai .copy-btn:hover {
+            background: #45a049;
+        }
+        
+        .brainstorm-welcome {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin: 20px 0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .actions button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .actions button:hover {
+            background: #f5f5f5;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="brainstorm-page">
+        <div class="brainstorm-page-header">
+            <div>
+                <h1>🧠 AI Brainstorm Session</h1>
+                <div class="task-context">
+                    <span class="task-quadrant" id="taskQuadrant"></span>
+                    <span class="task-name" id="taskName"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="brainstorm-main">
+            <div class="template-section">
+                <div class="template-selector-section">
+                    <label for="brainstormTemplateSelect">Start with a template (optional):</label>
+                    <select id="brainstormTemplateSelect">
+                        <option value="">Select a template...</option>
+                    </select>
+                </div>
+                
+                <div id="templateContextDisplay" class="template-context-display" style="display: none;">
+                    <!-- Template context will be displayed here -->
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <label for="brainstormPrompt">What would you like help with for this task?</label>
+                <textarea id="brainstormPrompt" placeholder="Example: Help me draft a professional email about this task, including key points to address and a clear call-to-action."></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <small style="color: #666;">Press Enter to send, Shift+Enter for new line</small>
+                    <button id="sendBrainstormBtn">Send Request</button>
+                </div>
+            </div>
+            
+            <div class="conversation-section">
+                <div id="brainstormMessages" class="brainstorm-messages">
+                    <div class="brainstorm-welcome">
+                        <p>👋 Hi! I'm here to help you brainstorm and work through this task. What would you like to explore?</p>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button onclick="clearBrainstormConversation()">Clear Conversation</button>
+                    <button onclick="window.close()">Close Tab</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="brainstorm.js"></script>
+</body>
+</html>

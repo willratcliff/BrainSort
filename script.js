@@ -1,4 +1,4 @@
-let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || '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';
+let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentUser = null;
@@ -1074,7 +1074,7 @@ function printTasks() {
                 <ul>
                     ${(currentTasks.triggers || []).length === 0 
                         ? '<li class="empty">No tasks in this quadrant</li>'
-                        : (currentTasks.triggers || []).map(task => `<li>${escapeHtml(task)}</li>`).join('')
+                        : (currentTasks.triggers || []).map(task => `<li>${escapeHtml(getTaskText(task))}</li>`).join('')
                     }
                 </ul>
             </div>
@@ -1085,7 +1085,7 @@ function printTasks() {
                 <ul>
                     ${(currentTasks.marinate || []).length === 0
                         ? '<li class="empty">No tasks in this quadrant</li>'
-                        : (currentTasks.marinate || []).map(task => `<li>${escapeHtml(task)}</li>`).join('')
+                        : (currentTasks.marinate || []).map(task => `<li>${escapeHtml(getTaskText(task))}</li>`).join('')
                     }
                 </ul>
             </div>
@@ -1096,7 +1096,7 @@ function printTasks() {
                 <ul>
                     ${(currentTasks.deepwork || []).length === 0
                         ? '<li class="empty">No tasks in this quadrant</li>'
-                        : (currentTasks.deepwork || []).map(task => `<li>${escapeHtml(task)}</li>`).join('')
+                        : (currentTasks.deepwork || []).map(task => `<li>${escapeHtml(getTaskText(task))}</li>`).join('')
                     }
                 </ul>
             </div>
@@ -1107,7 +1107,7 @@ function printTasks() {
                 <ul>
                     ${(currentTasks.quickwins || []).length === 0
                         ? '<li class="empty">No tasks in this quadrant</li>'
-                        : (currentTasks.quickwins || []).map(task => `<li>${escapeHtml(task)}</li>`).join('')
+                        : (currentTasks.quickwins || []).map(task => `<li>${escapeHtml(getTaskText(task))}</li>`).join('')
                     }
                 </ul>
             </div>

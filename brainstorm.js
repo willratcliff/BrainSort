@@ -1,5 +1,5 @@
 // Brainstorm page functionality
-let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || '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';
+let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || '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';
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentUser = null;

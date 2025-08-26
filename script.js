@@ -2,15 +2,18 @@
 function getDemoKey() {
     const parts = [
         'sk-or-v1-',
-        '6fe5d6461ceb4833',
-        '9ff006414518d55e',
-        '673508cdbcb40d71',
-        '58f81b1cef79cdc8'
+        '15fdd2c51b86b15d',
+        '84b248e93e09591f',
+        'a325176bd84ce383',
+        '9a2e26d615417ae3'
     ];
-    return parts.join('');
+    const key = parts.join('');
+    console.log('Demo key assembled:', key.substring(0, 15) + '...' + key.slice(-8));
+    return key;
 }
 
 let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || getDemoKey();
+console.log('Using API key:', OPENROUTER_API_KEY ? OPENROUTER_API_KEY.substring(0, 15) + '...' + OPENROUTER_API_KEY.slice(-8) : 'none');
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentUser = null;
@@ -498,33 +501,58 @@ Return ONLY this JSON format:
         });
 
         if (!response.ok) {
-            throw new Error(`API request failed: ${response.statusText}`);
+            const errorText = await response.text();
+            console.error('API Error Response:', errorText);
+            
+            // If demo key fails with 401, suggest user get their own key
+            if (response.status === 401 && OPENROUTER_API_KEY === getDemoKey()) {
+                throw new Error('Demo API key has expired. Please get your own free API key from openrouter.ai and set it in the model settings.');
+            }
+            
+            throw new Error(`API request failed: ${response.status} ${response.statusText}. ${errorText}`);
         }
 
         const data = await response.json();
+        console.log('API Response:', data);
+        
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+            throw new Error('Invalid API response format');
+        }
+        
         const content = data.choices[0].message.content;
+        
+        console.log('AI Response Content:', content);
         
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-            const newTasks = JSON.parse(jsonMatch[0]);
-            const brainDumpId = generateBrainDumpId();
-            
-            // Convert task strings to task objects with brain dump references
-            const convertTasksToObjects = (taskArray) => {
-                return (taskArray || []).map(taskText => createTaskObject(taskText, brainDumpId));
-            };
-            
-            // Add new tasks to existing ones instead of replacing
-            currentTasks.triggers = [...currentTasks.triggers, ...convertTasksToObjects(newTasks.triggers)];
-            currentTasks.marinate = [...currentTasks.marinate, ...convertTasksToObjects(newTasks.marinate)];
-            currentTasks.deepwork = [...currentTasks.deepwork, ...convertTasksToObjects(newTasks.deepwork)];
-            currentTasks.quickwins = [...currentTasks.quickwins, ...convertTasksToObjects(newTasks.quickwins)];
-            
-            displayQuadrants(currentTasks);
-            saveTasks();
-            saveLog(input, newTasks, brainDumpId);
-            // Clear the input for next brain dump
-            document.getElementById('brainDumpInput').value = '';
+            try {
+                const newTasks = JSON.parse(jsonMatch[0]);
+                console.log('Parsed tasks:', newTasks);
+                
+                const brainDumpId = generateBrainDumpId();
+                
+                // Convert task strings to task objects with brain dump references
+                const convertTasksToObjects = (taskArray) => {
+                    return (taskArray || []).map(taskText => createTaskObject(taskText, brainDumpId));
+                };
+                
+                // Add new tasks to existing ones instead of replacing
+                currentTasks.triggers = [...currentTasks.triggers, ...convertTasksToObjects(newTasks.triggers)];
+                currentTasks.marinate = [...currentTasks.marinate, ...convertTasksToObjects(newTasks.marinate)];
+                currentTasks.deepwork = [...currentTasks.deepwork, ...convertTasksToObjects(newTasks.deepwork)];
+                currentTasks.quickwins = [...currentTasks.quickwins, ...convertTasksToObjects(newTasks.quickwins)];
+                
+                displayQuadrants(currentTasks);
+                saveTasks();
+                saveLog(input, newTasks, brainDumpId);
+                // Clear the input for next brain dump
+                document.getElementById('brainDumpInput').value = '';
+            } catch (parseError) {
+                console.error('JSON Parse Error:', parseError);
+                throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
+            }
+        } else {
+            throw new Error('No JSON found in AI response');
         }
     } catch (error) {
         console.error('Error organizing tasks:', error);

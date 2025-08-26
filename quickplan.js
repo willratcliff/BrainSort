@@ -2,10 +2,10 @@
 function getDemoKey() {
     const parts = [
         'sk-or-v1-',
-        '6fe5d6461ceb4833',
-        '9ff006414518d55e',
-        '673508cdbcb40d71',
-        '58f81b1cef79cdc8'
+        '15fdd2c51b86b15d',
+        '84b248e93e09591f',
+        'a325176bd84ce383',
+        '9a2e26d615417ae3'
     ];
     return parts.join('');
 }

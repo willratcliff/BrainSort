@@ -1,19 +1,4 @@
-// Demo API key (lightly obfuscated)
-function getDemoKey() {
-    const parts = [
-        'sk-or-v1-',
-        '15fdd2c51b86b15d',
-        '84b248e93e09591f',
-        'a325176bd84ce383',
-        '9a2e26d615417ae3'
-    ];
-    const key = parts.join('');
-    console.log('Demo key assembled:', key.substring(0, 15) + '...' + key.slice(-8));
-    return key;
-}
-
-let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || getDemoKey();
-console.log('Using API key:', OPENROUTER_API_KEY ? OPENROUTER_API_KEY.substring(0, 15) + '...' + OPENROUTER_API_KEY.slice(-8) : 'none');
+let OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || null;
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentUser = null;
@@ -426,7 +411,194 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modelInput').value = e.target.dataset.model;
         });
     });
+    
+    // Initialize speech recognition
+    initializeSpeechRecognition();
 });
+
+// Speech Recognition Variables
+let recognition = null;
+let isRecording = false;
+let recordingStartTime = null;
+let recordingTimer = null;
+
+function initializeSpeechRecognition() {
+    // Check for Web Speech API support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        // Show unsupported message
+        document.getElementById('speechNotSupported').style.display = 'block';
+        document.getElementById('micBtn').style.display = 'none';
+        return;
+    }
+    
+    // Initialize recognition
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    
+    // Set up event handlers
+    setupSpeechEventHandlers();
+    
+    // Set up microphone button click handler
+    const micBtn = document.getElementById('micBtn');
+    if (micBtn) {
+        micBtn.addEventListener('click', toggleRecording);
+    }
+}
+
+function setupSpeechEventHandlers() {
+    if (!recognition) return;
+    
+    recognition.onstart = function() {
+        console.log('Speech recognition started');
+    };
+    
+    recognition.onresult = function(event) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (result.isFinal) {
+                finalTranscript += result[0].transcript + ' ';
+            } else {
+                interimTranscript += result[0].transcript;
+            }
+        }
+        
+        // Append final results to textarea
+        if (finalTranscript) {
+            const textarea = document.getElementById('brainDumpInput');
+            if (textarea) {
+                // Add a space before if textarea isn't empty and doesn't end with whitespace
+                const currentText = textarea.value;
+                const needsSpace = currentText && !currentText.match(/\s$/);
+                textarea.value += (needsSpace ? ' ' : '') + finalTranscript.trim() + ' ';
+            }
+        }
+    };
+    
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            alert('Microphone access denied. Please allow microphone access to use voice recording.');
+        } else if (event.error === 'no-speech') {
+            // Just continue, no need to alert for no speech
+        } else {
+            alert('Speech recognition error: ' + event.error);
+        }
+        stopRecording();
+    };
+    
+    recognition.onend = function() {
+        if (isRecording) {
+            // Restart if we're supposed to be recording
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error('Failed to restart recognition:', e);
+                stopRecording();
+            }
+        }
+    };
+}
+
+function toggleRecording() {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+}
+
+function startRecording() {
+    if (!recognition) return;
+    
+    isRecording = true;
+    recordingStartTime = Date.now();
+    
+    // Update UI
+    const micBtn = document.getElementById('micBtn');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+    const micText = micBtn.querySelector('.mic-text');
+    
+    micBtn.classList.add('recording');
+    micText.textContent = 'Stop Recording';
+    recordingIndicator.style.display = 'flex';
+    
+    // Start timer
+    startRecordingTimer();
+    
+    // Start speech recognition
+    try {
+        recognition.start();
+    } catch (e) {
+        console.error('Failed to start recognition:', e);
+        stopRecording();
+    }
+}
+
+function stopRecording() {
+    if (!recognition) return;
+    
+    isRecording = false;
+    
+    // Stop recognition
+    try {
+        recognition.stop();
+    } catch (e) {
+        console.error('Error stopping recognition:', e);
+    }
+    
+    // Update UI
+    const micBtn = document.getElementById('micBtn');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+    const micText = micBtn.querySelector('.mic-text');
+    
+    micBtn.classList.remove('recording');
+    micText.textContent = 'Voice Dump';
+    recordingIndicator.style.display = 'none';
+    
+    // Stop timer
+    stopRecordingTimer();
+}
+
+function startRecordingTimer() {
+    const timerElement = document.querySelector('.recording-timer');
+    if (!timerElement) return;
+    
+    recordingTimer = setInterval(() => {
+        if (!isRecording || !recordingStartTime) {
+            clearInterval(recordingTimer);
+            return;
+        }
+        
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Auto-stop after 5 minutes
+        if (elapsed >= 300) {
+            stopRecording();
+        }
+    }, 1000);
+}
+
+function stopRecordingTimer() {
+    if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+    }
+    
+    const timerElement = document.querySelector('.recording-timer');
+    if (timerElement) {
+        timerElement.textContent = '0:00';
+    }
+}
 
 function setupDragAndDrop() {
     const quadrants = document.querySelectorAll('.quadrant');
@@ -504,9 +676,9 @@ Return ONLY this JSON format:
             const errorText = await response.text();
             console.error('API Error Response:', errorText);
             
-            // If demo key fails with 401, suggest user get their own key
-            if (response.status === 401 && OPENROUTER_API_KEY === getDemoKey()) {
-                throw new Error('Demo API key has expired. Please get your own free API key from openrouter.ai and set it in the model settings.');
+            // If API key fails with 401, suggest user get their own key
+            if (response.status === 401) {
+                throw new Error('Invalid API key. Please get a free API key from openrouter.ai and set it in the model settings.');
             }
             
             throw new Error(`API request failed: ${response.status} ${response.statusText}. ${errorText}`);

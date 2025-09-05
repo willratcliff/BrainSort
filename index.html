@@ -66,16 +66,24 @@
         <main id="plannerView">
             <div class="brain-dump-section">
                 <h2>Brain Dump</h2>
-                <p class="instructions">Write down everything that's on your mind - tasks, ideas, projects, reminders. Don't worry about organizing, just get it all out!</p>
-                <textarea id="brainDumpInput" placeholder="Example:
-- Finish presentation for Friday's meeting
-- Call dentist to schedule appointment
-- Review team's pull requests
-- Buy groceries
-- Think about new marketing strategy
-- Fix bug in login system
-- Send invoice to client
-- Plan vacation dates"></textarea>
+                <p class="instructions">Dump everything that's on your mind - just let your thoughts flow naturally. Talk it out or type it out, don't worry about organizing!</p>
+                <textarea id="brainDumpInput" placeholder="So I really need to finish that presentation for Friday and oh yeah I forgot to call the dentist again, been putting that off for weeks. The login bug is driving me crazy, users keep complaining. Should probably review the team's code today if I have time. Also need groceries - out of milk and bread. Been thinking about that new marketing strategy, maybe we should try social media ads? Oh and I promised to send that invoice to the client by end of day. Also want to start planning those vacation dates but need to check with everyone's schedule first..."></textarea>
+                
+                <div class="audio-controls">
+                    <button id="micBtn" class="mic-btn" title="Click to record audio brain dump">
+                        <span class="mic-icon">🎤</span>
+                        <span class="mic-text">Voice Dump</span>
+                    </button>
+                    <div id="recordingIndicator" class="recording-indicator" style="display: none;">
+                        <span class="recording-dot"></span>
+                        <span class="recording-text">Recording...</span>
+                        <span class="recording-timer">0:00</span>
+                    </div>
+                    <div id="speechNotSupported" class="speech-not-supported" style="display: none;">
+                        Voice recording not supported in this browser. Please use Chrome, Edge, or Safari.
+                    </div>
+                </div>
+                
                 <button id="organizeBtn" class="organize-btn">Organize My Thoughts</button>
             </div>
 

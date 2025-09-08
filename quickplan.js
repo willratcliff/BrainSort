@@ -1,16 +1,22 @@
-// Demo API key (lightly obfuscated)
-function getDemoKey() {
-    const parts = [
-        'sk-or-v1-',
-        '15fdd2c51b86b15d',
-        '84b248e93e09591f',
-        'a325176bd84ce383',
-        '9a2e26d615417ae3'
-    ];
-    return parts.join('');
+// Simple obfuscation functions
+function obfuscateKey(key) {
+    const shifted = key.split('').map(char => String.fromCharCode(char.charCodeAt(0) + 3)).join('');
+    return btoa(shifted);
 }
 
-const OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || getDemoKey();
+function deobfuscateKey(obfuscated) {
+    try {
+        const decoded = atob(obfuscated);
+        return decoded.split('').map(char => String.fromCharCode(char.charCodeAt(0) - 3)).join('');
+    } catch {
+        return null;
+    }
+}
+
+// Obfuscated key - this is the encoded version of your BrainSort key
+const OBFUSCATED_KEY = 'dm4wcnUweTQwZGY1NGQ5NzxoODVkNzs4OzNnMzM5ZGg7O2Q0N2Q5ZmlmZTk7Nzc3PGVnO2Q2ZTtkNTU2aDU2Ojk1aTk1aGdlNA==';
+
+const OPENROUTER_API_KEY = localStorage.getItem('openrouter_api_key') || deobfuscateKey(OBFUSCATED_KEY);
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 let currentTasks = {
